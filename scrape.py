@@ -1,4 +1,7 @@
 from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 import time
 
@@ -8,14 +11,21 @@ class NCDHHSScraper:
         # these lines will help if someone faces issues like
         # chrome closes after execution
         self.opts = webdriver.ChromeOptions()
+        self.opts.add_argument("--headless")
         self.opts.add_experimental_option("detach", True)
         self.driver = webdriver.Chrome(options=self.opts)
+
+        params = {"behavior": "allow", "downloadPath": "/Users/bdavis/Downloads"}
+        self.driver.execute_cdp_cmd("Page.setDownloadBehavior", params)
 
         self.driver.get(baseUrl)
         self.driver.implicitly_wait(5)  # seconds
 
         for step in steps:
-            self.driver.find_element_by_xpath(step).click()
+            WebDriverWait(self.driver, 20).until(
+                EC.element_to_be_clickable((By.XPATH, step))
+            ).click()
+
             if step == steps[-1]:
                 time.sleep(5)  # assumes download and forces longer sleep
 
